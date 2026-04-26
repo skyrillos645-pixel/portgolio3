@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Smart Store Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#eef0f3;--card:#fff;--text:#111;--primary:#ff9900;--header:#111827;
+}
+body.dark{--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--header:#0b1220;}
+body{margin:0;font-family:'Cairo';background:var(--bg);color:var(--text)}
+header{background:var(--header);color:#fff;padding:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{cursor:pointer}
+.btn{background:var(--primary);border:none;padding:8px 10px;border-radius:8px}
+.container{padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:15px}
+.card{background:var(--card);padding:10px;border-radius:12px}
+input,select{width:100%;padding:8px;margin:5px 0;border-radius:6px;border:1px solid #ccc}
+.hidden{display:none}
+img{width:100%;height:150px;object-fit:cover}
+</style>
+</head>
+<body>
+
+<header>
+<div><b>🛒 Admin Panel</b></div>
+<button class="btn" onclick="show('shop')">المتجر</button>
+<button class="btn" onclick="show('admin')">لوحة التحكم</button>
+</header>
+
+<!-- SHOP -->
+<div id="shop" class="container">
+<div class="grid" id="products"></div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="container hidden">
+<h3>➕ إضافة منتج</h3>
+<input id="title" placeholder="اسم المنتج">
+<input id="price" placeholder="السعر">
+<input id="img" placeholder="رابط الصورة">
+<input id="link" placeholder="رابط AliExpress">
+<button class="btn" onclick="addProduct()">إضافة</button>
+
+<h3>✏️ تعديل / حذف</h3>
+<div id="adminList"></div>
+</div>
+
+<script>
+let products = JSON.parse(localStorage.getItem('products')||'[]');
+
+if(products.length===0){
+products=[
+{id:1,title:"تيشيرت",price:"12$",img:"https://via.placeholder.com/400",link:"https://www.aliexpress.com"},
+{id:2,title:"سماعة",price:"20$",img:"https://via.placeholder.com/400",link:"https://www.aliexpress.com"}
+];
+save();
+}
+
+function save(){localStorage.setItem('products',JSON.stringify(products));render();renderAdmin();}
+
+function render(){
+let box=document.getElementById('products');
+box.innerHTML='';
+products.forEach(p=>{
+box.innerHTML+=`
+<div class='card'>
+<img src='${p.img}'>
+<h4 contenteditable onblur="edit(${p.id},'title',this.innerText)">${p.title}</h4>
+<p contenteditable onblur="edit(${p.id},'price',this.innerText)">${p.price}</p>
+<a target='_blank' href='${p.link}'>شراء</a>
+</div>`;
+});
+}
+
+function renderAdmin(){
+let box=document.getElementById('adminList');
+box.innerHTML='';
+products.forEach(p=>{
+box.innerHTML+=`
+<div class='card'>
+<b>${p.title}</b>
+<button onclick='del(${p.id})'>حذف</button>
+</div>`;
+});
+}
+
+function addProduct(){
+let p={
+id:Date.now(),
+title:document.getElementById('title').value,
+price:document.getElementById('price').value,
+img:document.getElementById('img').value,
+link:document.getElementById('link').value
+};
+products.push(p);
+save();
+}
+
+function del(id){
+products=products.filter(p=>p.id!==id);
+save();
+}
+
+function edit(id,key,value){
+let p=products.find(x=>x.id==id);
+p[key]=value;
+save();
+}
+
+function show(x){
+document.getElementById('shop').classList.toggle('hidden',x!=='shop');
+document.getElementById('admin').classList.toggle('hidden',x!=='admin');
+}
+
+render();renderAdmin();
+</script>
+
+</body>
+</html>
